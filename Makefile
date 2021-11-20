@@ -38,7 +38,7 @@ clean:
 	rm -rf $(VENV)
 
 $(VENV):
-	virtualenv --python=$(PYTHON) $(VENV)
+	$(PYTHON) -m venv $(VENV)
 	$(VENV)/bin/pip3 install -r requirements.txt
 
 .PHONY: note all test lint mypy clean
