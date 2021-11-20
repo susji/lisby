@@ -1,0 +1,6 @@
+*.pyc
+/dist/
+/*.egg-info
+build/
+.mypy_cachevenv
+.mypy_cache
