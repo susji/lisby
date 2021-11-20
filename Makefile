@@ -16,12 +16,15 @@ note:
 	@echo lisby requires Python 3.6 or newer. For an alternative Python
 	@echo interpreter, run make with \`PYTHON=/path/to/python\`.
 	@echo
-	@echo To run lisby directly from the virtualenv, run
+	@echo To run lisby REPL directly from the virtualenv, run
 	@echo
-	@echo "    $$ $(VENV)/bin/python3 -m lisby"
+	@echo "    $$ make run"
 	@echo
 	@echo If your virtualenv is non-functional, run \`make clean\` first.
 	@echo
+
+run: $(VENV)
+	$(VENV)/bin/python3 -m lisby
 
 all: test mypy lint
 
@@ -37,5 +40,6 @@ lint: $(VENV)
 $(VENV):
 	$(PYTHON) -m venv $(VENV)
 	$(VENV)/bin/pip3 install -r requirements.txt
+	$(VENV)/bin/pip3 install -e .
 
-.PHONY: note all test lint mypy
+.PHONY: note all test lint mypy run
