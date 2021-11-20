@@ -34,11 +34,8 @@ mypy: $(VENV)
 lint: $(VENV)
 	$(VENV)/bin/pylint $(LINTFLAGS) lisby
 
-clean:
-	rm -rf $(VENV)
-
 $(VENV):
 	$(PYTHON) -m venv $(VENV)
 	$(VENV)/bin/pip3 install -r requirements.txt
 
-.PHONY: note all test lint mypy clean
+.PHONY: note all test lint mypy
