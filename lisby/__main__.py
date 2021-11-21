@@ -16,13 +16,18 @@ def make_completer(vocabulary):
     def custom_complete(text, state):
         results = [x for x in vocabulary if x.startswith(text)] + [None]
         return results[state] + " "
+
     return custom_complete
 
 
-aparser = argparse.ArgumentParser(description="lisby interpreter", epilog="""
+aparser = argparse.ArgumentParser(description="lisby interpreter",
+                                  epilog="""
 Running without the source or destination arguments will give you a REPL.
 """)
-aparser.add_argument("-s", "--source", nargs="?", type=argparse.FileType("r"),
+aparser.add_argument("-s",
+                     "--source",
+                     nargs="?",
+                     type=argparse.FileType("r"),
                      help="input source or '-' for stdin")
 aparser.add_argument("-b", "--bytecode", nargs="?",
                      type=argparse.FileType("rb"),
@@ -110,7 +115,10 @@ else:
                 if debug:
                     prog.dump()
                 pc = run(prog, pc=pc)
-                print("-> %s " % vm.stack[-1])
+                if len(vm.stack) > 0:
+                    print("-> %s " % vm.stack[-1])
+                else:
+                    print("-> no stack value")
             except (LisbySyntaxError, LisbyRuntimeError) as e:
                 print("%s" % e)
                 pc = vm.rewind_after_error()
