@@ -1,4 +1,5 @@
 from typing import List, Callable, Dict
+from copy import deepcopy
 from struct import pack
 
 from lisby.shared import LisbySyntaxError
@@ -17,8 +18,12 @@ def nodes_to_str(expr) -> str:
 
 
 class Macro:
-    def __init__(self, c: "Compiler", p: Program, name: str,
-                 params: List[str], body: List[Node],
+    def __init__(self,
+                 c: "Compiler",
+                 p: Program,
+                 name: str,
+                 params: List[str],
+                 body: List[Node],
                  debug: bool = False) -> None:
         self.name = name
         self.params = params
@@ -51,21 +56,22 @@ class Macro:
         return n
 
     def expand(self, n: Application) -> None:
-        self._debug("`%s' of node %s" % (self.name, n))
         args = n.args()
+        self._debug("`%s' of node %s" % (self.name, n))
         if len(args) != len(self.params):
             raise LisbySyntaxError(
-                n,
-                "Macro %s expects %d arguments, got %d" % (
-                    self.name, len(self.params), len(args)))
+                n, "Macro %s expects %d arguments, got %d" %
+                (self.name, len(self.params), len(args)))
+        body_orig = deepcopy(self.body)
         for node in self.body:
             node = self._expand(args, node)
             self.compiler._compile(self.program, node)
+        self.body = body_orig
         self._debug("finished expansion")
 
 
 class Compiler:
-    def __init__(self, debug: bool=False) -> None:
+    def __init__(self, debug: bool = False) -> None:
         self.debug = debug
         self.macros: Dict[str, Macro] = {}
         self.forms: Dict[str, Callable[[Program, Application], None]] = {
@@ -104,8 +110,8 @@ class Compiler:
 
     def _symbol_apply(self, p: Program, app: Application) -> None:
         sym, args = app.applier(), app.args()
-        self._debug("symbol apply: %s with args %s " % (
-            sym, nodes_to_str(args)))
+        self._debug("symbol apply: %s with args %s " %
+                    (sym, nodes_to_str(args)))
         symindex = p.symbol_find(sym.value)
         self._compile_list(p, args)
         self._push_symbol(p, sym)
@@ -141,18 +147,15 @@ class Compiler:
             p.emit(Op.Type.PUSHUNIT)
         else:
             raise LisbySyntaxError(
-                atom,
-                "Atom expected, got %s (%s)" % (
-                    nodes_to_str(atom), type(atom).__name__))
+                atom, "Atom expected, got %s (%s)" %
+                (nodes_to_str(atom), type(atom).__name__))
 
     def _or(self, p: Program, node: Application) -> None:
         """_or generates the short-circuiting boolean OR"""
         self._debug("or")
         orr = node.args()
         if len(orr) != 2:
-            raise LisbySyntaxError(
-                node,
-                "or expects two arguments")
+            raise LisbySyntaxError(node, "or expects two arguments")
         first, second = orr
         self._compile(p, first)
         p.emit(Op.Type.JT)
@@ -176,9 +179,7 @@ class Compiler:
         self._debug("and")
         orr = node.args()
         if len(orr) != 2:
-            raise LisbySyntaxError(
-                node,
-                "and expects two arguments")
+            raise LisbySyntaxError(node, "and expects two arguments")
         # Our goal is to compile the following:
         # - evaluate first condition
         # - it it failed, jump to a PUSHFALSE
@@ -208,8 +209,7 @@ class Compiler:
         args = node.args()
         if len(args) < 2:
             raise LisbySyntaxError(
-                node,
-                "List concatenation needs at least two parameters")
+                node, "List concatenation needs at least two parameters")
         for arg in args:
             self._compile(p, arg)
         for n in range(len(args) - 1):
@@ -220,14 +220,12 @@ class Compiler:
         self._debug("defmacro")
         args = node.args()
         if len(args) < 2:
-            raise LisbySyntaxError(
-                node,
-                "defmacro needs at least two parameters")
+            raise LisbySyntaxError(node,
+                                   "defmacro needs at least two parameters")
         if not isinstance(args[0], Application):
             raise LisbySyntaxError(
                 args[0],
-                "No macro parameters given, got %s" % (
-                    type(args[0]).__name__))
+                "No macro parameters given, got %s" % (type(args[0]).__name__))
         rawparams = args[0].tolist()
         if len(rawparams) == 0:
             raise LisbySyntaxError(rawparams, "Need at least macro name")
@@ -235,9 +233,8 @@ class Compiler:
         for param in rawparams:
             if not isinstance(param, Symbol):
                 raise LisbySyntaxError(
-                    param,
-                    "Macro parameter not a symbol, got %s" % (
-                        type(param).__name__))
+                    param, "Macro parameter not a symbol, got %s" %
+                    (type(param).__name__))
             params.append(param.value)
         name = params[0]
         params = params[1:]
@@ -246,8 +243,7 @@ class Compiler:
             raise LisbySyntaxError(node, "Macro %s already defined" % name)
         if name in self.forms:
             raise LisbySyntaxError(
-                node,
-                "Macro name %s collides with a special form" % name)
+                node, "Macro name %s collides with a special form" % name)
         self.macros[name] = Macro(self, p, name, params, args[1:], self.debug)
 
     ccerr = ("call/cc parameter has to be a lambda expression " +
@@ -258,29 +254,27 @@ class Compiler:
         self._debug("call/cc")
         args = node.args()
         if len(args) != 1:
-            raise LisbySyntaxError(
-                node,
-                "call/cc accepts only one paramter")
+            raise LisbySyntaxError(node, "call/cc accepts only one paramter")
         param = args[0]
         if not isinstance(param, Application):
-            raise LisbySyntaxError(
-                node, Compiler.ccerr % (type(param).__name__, 1))
+            raise LisbySyntaxError(node,
+                                   Compiler.ccerr % (type(param).__name__, 1))
         parargs = param.tolist()
         if len(parargs) < 2:
-            raise LisbySyntaxError(
-                node, Compiler.ccerr % (type(param).__name__, 2))
+            raise LisbySyntaxError(node,
+                                   Compiler.ccerr % (type(param).__name__, 2))
         if not isinstance(parargs[0], Symbol) or parargs[0].value != "lambda":
-            raise LisbySyntaxError(
-                node, Compiler.ccerr % (type(param).__name__, 3))
+            raise LisbySyntaxError(node,
+                                   Compiler.ccerr % (type(param).__name__, 3))
         binds = parargs[1]
         self._debug(binds)
         if not isinstance(binds, Application) or len(binds.tolist()) != 1:
-            raise LisbySyntaxError(
-                node, Compiler.ccerr % (type(param).__name__, 4))
+            raise LisbySyntaxError(node,
+                                   Compiler.ccerr % (type(param).__name__, 4))
         exprs = parargs[2:]
         if not isinstance(binds, Application):
-            raise LisbySyntaxError(
-                node, Compiler.ccerr % (type(param).__name__, 5))
+            raise LisbySyntaxError(node,
+                                   Compiler.ccerr % (type(param).__name__, 5))
         params = binds.tolist()
         p.emit(Op.Type.PUSHCONT)
         patch_cont_end = p.emitpholder()
@@ -310,9 +304,8 @@ class Compiler:
         self._debug("begin")
         args = node.args()
         if len(args) == 0:
-            raise LisbySyntaxError(
-                node,
-                "begin form needs at least one expression")
+            raise LisbySyntaxError(node,
+                                   "begin form needs at least one expression")
         self._compile_exprs(p, args)
 
     def _set(self, p: Program, node: Application) -> None:
@@ -324,9 +317,7 @@ class Compiler:
                 "set! form expects two arguments, binding and expression")
         target, val = args
         if not isinstance(target, Symbol):
-            raise LisbySyntaxError(
-                target,
-                "set! target should be a symbol")
+            raise LisbySyntaxError(target, "set! target should be a symbol")
         self._compile(p, val)
         self._store(p, target.value)
         p.emit(Op.Type.PUSHUNIT)
@@ -382,8 +373,8 @@ class Compiler:
             self._application(p, app)
             p.emit(Op.Type.CALL)
         else:
-            raise LisbySyntaxError(node, "Cannot apply with %s" % type(
-                node).__name__)
+            raise LisbySyntaxError(
+                node, "Cannot apply with %s" % type(node).__name__)
 
     def _lambda(self, p: Program, node: Application) -> None:
         # Our lambda form is straight from Scheme:
@@ -392,9 +383,8 @@ class Compiler:
         self._debug("lambda: %s" % nodes_to_str(node.tolist()))
         if len(args) < 2:
             raise LisbySyntaxError(
-                node,
-                "lambda form needs at least two parameters, got %d" % len(
-                    args))
+                node, "lambda form needs at least two parameters, got %d" %
+                len(args))
         params: List[Node] = None
         if isinstance(args[0], Application):
             params = args[0].tolist()

@@ -17,9 +17,8 @@ class TestSystem(unittest.TestCase):
         parser = Parser(debug=False)
         compiler = Compiler(debug=debug)
         vm = VM()
-        vm.run(compiler.compile(
-            Program(),
-            parser.parse(lexer.lex(code))), trace=debug)
+        vm.run(compiler.compile(Program(), parser.parse(lexer.lex(code))),
+               trace=debug)
         return vm
 
     def test_arith(self):
@@ -27,9 +26,7 @@ class TestSystem(unittest.TestCase):
         self.assertEqual(vm.stack[-1].value, 16)
 
     def test_mod(self):
-        tests = (
-            ("(% 20 5)", 0),
-            ("(% -5 10)", 5))
+        tests = (("(% 20 5)", 0), ("(% -5 10)", 5))
         for test in tests:
             vm = self.invoke(test[0])
             val = vm.stack[-1]
@@ -37,11 +34,9 @@ class TestSystem(unittest.TestCase):
             self.assertEqual(val.value, test[1])
 
     def test_bits(self):
-        tests = (
-            ("(| 170 85)", 170 | 85),
-            ("(^ 255 128)", 255 ^ 128),
-            ("(& 255 7)", 255 & 7),
-            ("(~ 170)", ~170 & 0xFFFFFFFFFFFFFFFF))
+        tests = (("(| 170 85)", 170 | 85), ("(^ 255 128)", 255 ^ 128),
+                 ("(& 255 7)", 255 & 7), ("(~ 170)",
+                                          ~170 & 0xFFFFFFFFFFFFFFFF))
         for test in tests:
             print("bit test: %s " % test[0])
             vm = self.invoke(test[0])
@@ -62,8 +57,8 @@ class TestSystem(unittest.TestCase):
             print("cond test: %s" % test[0])
             vm = self.invoke(test[0])
             self.assertTrue(
-                isinstance(vm.stack[-1], VTrue) or
-                isinstance(vm.stack[-1], VFalse))
+                isinstance(vm.stack[-1], VTrue)
+                or isinstance(vm.stack[-1], VFalse))
             self.assertEqual(vm.stack[-1].value, test[1])
 
     def test_let(self):
@@ -139,11 +134,8 @@ class TestSystem(unittest.TestCase):
         self.assertEqual(vm.stack[-1].value, 30)
 
     def test_or(self):
-        tests = (
-            ("(or #f #f)", False),
-            ("(or #t #f)", True),
-            ("(or #t #t)", True),
-            ("(or #f #t)", True))
+        tests = (("(or #f #f)", False), ("(or #t #f)", True),
+                 ("(or #t #t)", True), ("(or #f #t)", True))
         for test in tests:
             print("or: %s" % test[0])
             vm = self.invoke(test[0])
@@ -156,11 +148,8 @@ class TestSystem(unittest.TestCase):
             self.assertEqual(val.value, test[1])
 
     def test_and(self):
-        tests = (
-            ("(and #f #f)", False),
-            ("(and #t #f)", False),
-            ("(and #t #t)", True),
-            ("(and #f #t)", False))
+        tests = (("(and #f #f)", False), ("(and #t #f)", False),
+                 ("(and #t #t)", True), ("(and #f #t)", False))
         for test in tests:
             print("and: %s" % test[0])
             vm = self.invoke(test[0])
@@ -214,9 +203,7 @@ class TestSystem(unittest.TestCase):
         p = vm.program
         env = vm.topenv
         for var in (("eka", 11), ("toka", 21), ("kolmas", 12), ("neljas", 22)):
-            self.assertEqual(
-                env.values[p.symbol_find(var[0])].value,
-                var[1])
+            self.assertEqual(env.values[p.symbol_find(var[0])].value, var[1])
         self.assertEqual(env.values[p.symbol_find("counter")].value, 4)
 
     def test_recursion(self):
@@ -230,9 +217,8 @@ class TestSystem(unittest.TestCase):
         """ % n)
         p = vm.program
         env = vm.topenv
-        self.assertEqual(
-            env.values[p.symbol_find("result")].value,
-            factorial(n))
+        self.assertEqual(env.values[p.symbol_find("result")].value,
+                         factorial(n))
 
     def test_naive_fibonacci(self):
         n = 10
@@ -250,9 +236,7 @@ class TestSystem(unittest.TestCase):
         """ % n)
         p = vm.program
         env = vm.topenv
-        self.assertEqual(
-            env.values[p.symbol_find("result")].value,
-            55)
+        self.assertEqual(env.values[p.symbol_find("result")].value, 55)
 
     def test_list(self):
         vm = self.invoke("""
@@ -408,10 +392,16 @@ class TestSystem(unittest.TestCase):
         vm = self.invoke("""
 (defmacro (multiplier a b) (* a b))
 (multiplier 5 6)
-        """, debug=True)
-        res = vm.stack[-1]
-        self.assertTrue(isinstance(res, Int), res)
-        self.assertEqual(res.value, 30)
+(+ (multiplier 10 7) 5)
+        """,
+                         debug=True)
+        second = vm.stack[-1]
+        vm.stack.pop()
+        first = vm.stack[-1]
+        for v in ((first, 30), (second, 75)):
+            print(v)
+            self.assertTrue(isinstance(v[0], Int), v)
+            self.assertEqual(v[0].value, v[1], f"got {v[0]}, want {v[1]}")
 
     def test_defmacro_looper(self):
         vm = self.invoke("""
