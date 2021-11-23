@@ -392,10 +392,16 @@ class TestSystem(unittest.TestCase):
         vm = self.invoke("""
 (defmacro (multiplier a b) (* a b))
 (multiplier 5 6)
-        """, debug=True)
-        res = vm.stack[-1]
-        self.assertTrue(isinstance(res, Int), res)
-        self.assertEqual(res.value, 30)
+(+ (multiplier 10 7) 5)
+        """,
+                         debug=True)
+        second = vm.stack[-1]
+        vm.stack.pop()
+        first = vm.stack[-1]
+        for v in ((first, 30), (second, 75)):
+            print(v)
+            self.assertTrue(isinstance(v[0], Int), v)
+            self.assertEqual(v[0].value, v[1], f"got {v[0]}, want {v[1]}")
 
     def test_defmacro_looper(self):
         vm = self.invoke("""
