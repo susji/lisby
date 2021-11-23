@@ -447,13 +447,14 @@ class TestSystem(unittest.TestCase):
 (defmacro (multiplier a b) (* a b))
 (multiplier 5 6)
 (+ (multiplier 10 7) 5)
+(multiplier 2 (multiplier 3 4))
         """,
             debug=True,
         )
-        second = vm.stack[-1]
-        vm.stack.pop()
-        first = vm.stack[-1]
-        for v in ((first, 30), (second, 75)):
+        third = vm.stack.pop()
+        second = vm.stack.pop()
+        first = vm.stack.pop()
+        for v in ((first, 30), (second, 75), (third, 24)):
             print(v)
             self.assertTrue(isinstance(v[0], Int), v)
             self.assertEqual(v[0].value, v[1], f"got {v[0]}, want {v[1]}")
