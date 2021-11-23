@@ -9,11 +9,7 @@ class NodeError(Exception):
 
 
 class Node:
-    def __init__(self,
-                 token: plex.LexToken,
-                 arity: int,
-                 left=None,
-                 right=None) -> None:
+    def __init__(self, token: plex.LexToken, arity: int, left=None, right=None) -> None:
         if arity == 1:
             if left is None:
                 raise NodeError("Arity is one and no left node")
@@ -36,12 +32,15 @@ class Node:
 
     def __repr__(self):
         return "%r(%r, left=%r, right=%r)" % (
-            type(self).__name__, self.arity, self.left, self.right)
+            type(self).__name__,
+            self.arity,
+            self.left,
+            self.right,
+        )
 
 
 class Application(Node):
-    def __init__(self, tok: plex.LexToken, applier: Node,
-                 args: List[Node]) -> None:
+    def __init__(self, tok: plex.LexToken, applier: Node, args: List[Node]) -> None:
         super().__init__(tok, arity=2, left=applier, right=args)
 
     def __str__(self):

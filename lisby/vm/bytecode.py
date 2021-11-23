@@ -9,6 +9,7 @@ class Op:
         We have two variants of VM instructions: those without any subsequent
         data, and those with 8 bytes of some data. We assume little-endian.
         """
+
         @staticmethod
         def fromint(code):
             e = Op.Type(code)
@@ -68,12 +69,24 @@ class Op:
     def rawfollows(cls, ty) -> int:
         """Determine how many following bytes to skip if an instruction
         happens to define subsequent raw data."""
-        followers = (cls.Type.PUSHI, cls.Type.PUSHF, cls.Type.PUSHSTR,
-                     cls.Type.PUSHSY, cls.Type.STORE, cls.Type.STORETOP,
-                     cls.Type.PUSHCLOSURE, cls.Type.JF, cls.Type.JMP,
-                     cls.Type.DECLARE, cls.Type.LIST, cls.Type.PUSHSYRAW,
-                     cls.Type.QUOTED, cls.Type.JT, cls.Type.PUSHCONT,
-                     cls.Type.QUASIQUOTED)
+        followers = (
+            cls.Type.PUSHI,
+            cls.Type.PUSHF,
+            cls.Type.PUSHSTR,
+            cls.Type.PUSHSY,
+            cls.Type.STORE,
+            cls.Type.STORETOP,
+            cls.Type.PUSHCLOSURE,
+            cls.Type.JF,
+            cls.Type.JMP,
+            cls.Type.DECLARE,
+            cls.Type.LIST,
+            cls.Type.PUSHSYRAW,
+            cls.Type.QUOTED,
+            cls.Type.JT,
+            cls.Type.PUSHCONT,
+            cls.Type.QUASIQUOTED,
+        )
         if ty in followers:
             return 8
         return 0

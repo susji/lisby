@@ -5,8 +5,18 @@ from math import factorial
 from lisby.shared import LisbyRuntimeError
 from lisby.lexer import Lexer
 from lisby.parser import Parser
-from lisby.vm import (VM, Program, Int, Symbol, VList, Quoted, VTrue, VFalse,
-                      Float, Quasiquoted)
+from lisby.vm import (
+    VM,
+    Program,
+    Int,
+    Symbol,
+    VList,
+    Quoted,
+    VTrue,
+    VFalse,
+    Float,
+    Quasiquoted,
+)
 from lisby.compiler import Compiler
 
 
@@ -17,8 +27,7 @@ class TestSystem(unittest.TestCase):
         parser = Parser(debug=False)
         compiler = Compiler(debug=debug)
         vm = VM()
-        vm.run(compiler.compile(Program(), parser.parse(lexer.lex(code))),
-               trace=debug)
+        vm.run(compiler.compile(Program(), parser.parse(lexer.lex(code))), trace=debug)
         return vm
 
     def test_arith(self):
@@ -34,9 +43,12 @@ class TestSystem(unittest.TestCase):
             self.assertEqual(val.value, test[1])
 
     def test_bits(self):
-        tests = (("(| 170 85)", 170 | 85), ("(^ 255 128)", 255 ^ 128),
-                 ("(& 255 7)", 255 & 7), ("(~ 170)",
-                                          ~170 & 0xFFFFFFFFFFFFFFFF))
+        tests = (
+            ("(| 170 85)", 170 | 85),
+            ("(^ 255 128)", 255 ^ 128),
+            ("(& 255 7)", 255 & 7),
+            ("(~ 170)", ~170 & 0xFFFFFFFFFFFFFFFF),
+        )
         for test in tests:
             print("bit test: %s " % test[0])
             vm = self.invoke(test[0])
@@ -57,8 +69,8 @@ class TestSystem(unittest.TestCase):
             print("cond test: %s" % test[0])
             vm = self.invoke(test[0])
             self.assertTrue(
-                isinstance(vm.stack[-1], VTrue)
-                or isinstance(vm.stack[-1], VFalse))
+                isinstance(vm.stack[-1], VTrue) or isinstance(vm.stack[-1], VFalse)
+            )
             self.assertEqual(vm.stack[-1].value, test[1])
 
     def test_let(self):
@@ -67,14 +79,16 @@ class TestSystem(unittest.TestCase):
         self.assertEqual(vm.stack[-1].value, 247)
 
     def test_let_scoping(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define res 0)
 (define res2 0)
 (let ((x 123))
     (let ((x 321))
         (set! res2 x))
     (set! res x))
-""")
+"""
+        )
         p = vm.program
         env = vm.topenv
         res = env.values[p.symbol_find("res")]
@@ -109,33 +123,43 @@ class TestSystem(unittest.TestCase):
         self.assertEqual(vm.stack[-1].value, 5)
 
     def test_bound_lambda(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define plusser (lambda (x y) (+ x y)))
 (plusser 1 2)
-        """)
+        """
+        )
         self.assertEqual(len(vm.stack), 2)
         self.assertEqual(vm.stack[-1].value, 3)
 
     def test_lambda_define(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define (plusser x y) (+ x y))
 (define (multer a b) (* a b))
 (plusser 1 (multer 2 3))
-        """)
+        """
+        )
         self.assertEqual(len(vm.stack), 3)
         self.assertEqual(vm.stack[-1].value, 7)
 
     def test_lambda_passing(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define (oner fun y) 321 789 (fun 10 y))
 (oner (lambda (a b) (+ a b)) 20)
-        """)
+        """
+        )
         self.assertEqual(len(vm.stack), 2)
         self.assertEqual(vm.stack[-1].value, 30)
 
     def test_or(self):
-        tests = (("(or #f #f)", False), ("(or #t #f)", True),
-                 ("(or #t #t)", True), ("(or #f #t)", True))
+        tests = (
+            ("(or #f #f)", False),
+            ("(or #t #f)", True),
+            ("(or #t #t)", True),
+            ("(or #f #t)", True),
+        )
         for test in tests:
             print("or: %s" % test[0])
             vm = self.invoke(test[0])
@@ -148,8 +172,12 @@ class TestSystem(unittest.TestCase):
             self.assertEqual(val.value, test[1])
 
     def test_and(self):
-        tests = (("(and #f #f)", False), ("(and #t #f)", False),
-                 ("(and #t #t)", True), ("(and #f #t)", False))
+        tests = (
+            ("(and #f #f)", False),
+            ("(and #t #f)", False),
+            ("(and #t #t)", True),
+            ("(and #f #t)", False),
+        )
         for test in tests:
             print("and: %s" % test[0])
             vm = self.invoke(test[0])
@@ -162,32 +190,39 @@ class TestSystem(unittest.TestCase):
             self.assertEqual(val.value, test[1])
 
     def test_if(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (if (= 0 1) #f #t)
 (if (!= 0 1) #f #t)
-        """)
+        """
+        )
         self.assertEqual(len(vm.stack), 2)
         self.assertEqual(vm.stack[0].value, True)
         self.assertEqual(vm.stack[1].value, False)
 
     def test_begin(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (begin 1 2 3 4 5 6 7 8 9 10)
-        """)
+        """
+        )
         self.assertEqual(len(vm.stack), 1)
         self.assertEqual(vm.stack[0].value, 10)
 
     def test_set(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define testi 123)
 (set! testi 321)
-        """)
+        """
+        )
         p = vm.program
         env = vm.topenv
         self.assertEqual(env.values[p.symbol_find("testi")].value, 321)
 
     def test_closure(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define counter 0)
 (define (gen-adder start)
     (lambda () (set! start (+ start 1))
@@ -199,7 +234,8 @@ class TestSystem(unittest.TestCase):
 (define toka (b))
 (define kolmas (a))
 (define neljas (b))
-        """)
+        """
+        )
         p = vm.program
         env = vm.topenv
         for var in (("eka", 11), ("toka", 21), ("kolmas", 12), ("neljas", 22)):
@@ -208,21 +244,24 @@ class TestSystem(unittest.TestCase):
 
     def test_recursion(self):
         n = 50
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define (fact n)
     (if (= n 0)
         1
         (* n (fact (- n 1)))))
 (define result (fact %d))
-        """ % n)
+        """
+            % n
+        )
         p = vm.program
         env = vm.topenv
-        self.assertEqual(env.values[p.symbol_find("result")].value,
-                         factorial(n))
+        self.assertEqual(env.values[p.symbol_find("result")].value, factorial(n))
 
     def test_naive_fibonacci(self):
         n = 10
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define (-fibo x sum)
         (if (= x 0)
             0
@@ -233,15 +272,19 @@ class TestSystem(unittest.TestCase):
                     (-fibo (- x 2) (+ sum x))))))
 (define (fibo x) (-fibo x 0))
 (define result (fibo %d))
-        """ % n)
+        """
+            % n
+        )
         p = vm.program
         env = vm.topenv
         self.assertEqual(env.values[p.symbol_find("result")].value, 55)
 
     def test_list(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define result (list 123 "viisi" 123.456))
-        """)
+        """
+        )
         p = vm.program
         env = vm.topenv
         res = env.values[p.symbol_find("result")].value
@@ -252,11 +295,13 @@ class TestSystem(unittest.TestCase):
             self.assertEqual(exp, got)
 
     def test_concat_list(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define one (list 1 2))
 (define two (list 3 4))
 (define result (:: one two (list 5 6)))
-        """)
+        """
+        )
 
         p = vm.program
         env = vm.topenv
@@ -282,7 +327,8 @@ class TestSystem(unittest.TestCase):
             self.assertEqual(exp, got)
 
     def test_map(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define (mapr with what)
     (if (= what '())
         '()
@@ -291,7 +337,8 @@ class TestSystem(unittest.TestCase):
     (mapr
         (lambda (x) (* 2 x))
         '(1 2 3 4)))
-        """)
+        """
+        )
         p = vm.program
         env = vm.topenv
         res = env.values[p.symbol_find("result")].value
@@ -332,10 +379,12 @@ class TestSystem(unittest.TestCase):
     def test_binding_purity(self):
         """Make sure that our bindings are not accidentally modified
         by reference."""
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define one (list 1 2 3))
 (define two (tail one))
-        """)
+        """
+        )
         p = vm.program
         env = vm.topenv
         one = env.values[p.symbol_find("one")].value
@@ -344,14 +393,17 @@ class TestSystem(unittest.TestCase):
         self.assertEqual(len(two), 2)
 
     def test_continuation(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (+ 10 (call/cc (lambda (k) (k 1) 2)))
-        """)
+        """
+        )
         val = vm.stack[-1]
         self.assertEqual(val.value, 11)
 
     def test_continuation_harder(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define (inv v)
     (call/cc (lambda (return)
         (display "doing things")
@@ -360,7 +412,8 @@ class TestSystem(unittest.TestCase):
         (/ 1 v))))
 (define one (inv 2))
 (define two (inv 0))
-        """)
+        """
+        )
         p = vm.program
         env = vm.topenv
         one = env.values[p.symbol_find("one")]
@@ -389,12 +442,14 @@ class TestSystem(unittest.TestCase):
         self.assertEqual(vals[1].value, 3)
 
     def test_defmacro(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (defmacro (multiplier a b) (* a b))
 (multiplier 5 6)
 (+ (multiplier 10 7) 5)
         """,
-                         debug=True)
+            debug=True,
+        )
         second = vm.stack[-1]
         vm.stack.pop()
         first = vm.stack[-1]
@@ -404,7 +459,8 @@ class TestSystem(unittest.TestCase):
             self.assertEqual(v[0].value, v[1], f"got {v[0]}, want {v[1]}")
 
     def test_defmacro_looper(self):
-        vm = self.invoke("""
+        vm = self.invoke(
+            """
 (define counter 1)
 (defmacro (looperer init cond on-each action)
     (let (init (loop
@@ -418,7 +474,8 @@ class TestSystem(unittest.TestCase):
     (< -i 10)
     (set! -i (+ -i 1))
     (set! counter (* counter 2)))
-        """)
+        """
+        )
         p = vm.program
         env = vm.topenv
         res = env.values[p.symbol_find("counter")]

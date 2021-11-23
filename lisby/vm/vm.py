@@ -5,9 +5,23 @@ import operator
 
 from lisby.shared import LisbyRuntimeError
 from .bytecode import Op
-from .value import (Environment, Value, Int, Float, String, Symbol, VTrue,
-                    VFalse, Closure, VList, Quoted, Continuation, Address,
-                    Quasiquoted, Unquoted)
+from .value import (
+    Environment,
+    Value,
+    Int,
+    Float,
+    String,
+    Symbol,
+    VTrue,
+    VFalse,
+    Closure,
+    VList,
+    Quoted,
+    Continuation,
+    Address,
+    Quasiquoted,
+    Unquoted,
+)
 from .program import Program
 
 
@@ -91,10 +105,10 @@ class VM:
         self.stack = self.stack[:-1]
 
     def _read_int(self, pc: int) -> int:
-        return unpack("<q", self.tapes[self.tape][pc:pc + 8])[0]
+        return unpack("<q", self.tapes[self.tape][pc : pc + 8])[0]
 
     def _read_float(self, pc: int) -> float:
-        return unpack("<d", self.tapes[self.tape][pc:pc + 8])[0]
+        return unpack("<d", self.tapes[self.tape][pc : pc + 8])[0]
 
     def _store(self, env: Environment, pc: int) -> None:
         val = self._pop()
@@ -120,7 +134,7 @@ class VM:
         self.pc = len(self.tapes[0])
         return self.pc
 
-    def run(self, program: Program, pc: int=0, trace: bool=False) -> int:
+    def run(self, program: Program, pc: int = 0, trace: bool = False) -> int:
         self._trace("running from pc=%d" % pc)
         if trace:
             program.dump()
@@ -163,15 +177,22 @@ class VM:
                     result = Float(r)
                 else:
                     raise LisbyRuntimeError(
-                        "surpising arithmetic result type: %s " % (
-                            type(r).__name__))
-            elif (isinstance(left, Float) and isinstance(right, Float) or
-                  isinstance(left, Int) and isinstance(right, Float) or
-                  isinstance(left, Float) and isinstance(right, Int)):
+                        "surpising arithmetic result type: %s " % (type(r).__name__)
+                    )
+            elif (
+                isinstance(left, Float)
+                and isinstance(right, Float)
+                or isinstance(left, Int)
+                and isinstance(right, Float)
+                or isinstance(left, Float)
+                and isinstance(right, Int)
+            ):
                 result = Float(op(left.value, right.value))  # type: ignore
             else:
-                raise ArithmeticError("cannot add types %s and %s" % (
-                    type(left).__name__, type(right).__name__))  # type: ignore
+                raise ArithmeticError(
+                    "cannot add types %s and %s"
+                    % (type(left).__name__, type(right).__name__)
+                )  # type: ignore
             self.stack[-1] = result
 
         def add(pc: int) -> int:
@@ -210,8 +231,9 @@ class VM:
             un = self.stack[-1]
             if not isinstance(un, Int):
                 raise ArithmeticError(
-                    "bitwise inversion applies only to ints, got %s" % (
-                        type(un).__name__))
+                    "bitwise inversion applies only to ints, got %s"
+                    % (type(un).__name__)
+                )
             un.value = ~un.value & 0xFFFFFFFFFFFFFFFF
             return pc
 
@@ -262,8 +284,9 @@ class VM:
         def pushcont(pc: int) -> int:
             # We don't want to save the Continuation and Closure from the
             # stack.
-            self._push(Continuation(
-                self.stack[:-2], self.rets, self.tape, self._read_int(pc)))
+            self._push(
+                Continuation(self.stack[:-2], self.rets, self.tape, self._read_int(pc))
+            )
             return pc + 8
 
         def quote(pc: int) -> int:
@@ -298,8 +321,9 @@ class VM:
                 return callee.pc
             else:
                 raise LisbyRuntimeError(
-                    "can only apply a continuation or a closure, got %s" % (
-                        type(callee).__name__))
+                    "can only apply a continuation or a closure, got %s"
+                    % (type(callee).__name__)
+                )
 
         def tailcall(pc: int) -> int:
             assert 0, "XXX IMPLEMENT ME"
@@ -317,7 +341,8 @@ class VM:
             right = self.stack[-1]
             if type(left) != type(right):
                 raise LisbyRuntimeError(
-                    "Non-comparable types: %s vs. %s " % (left, right))
+                    "Non-comparable types: %s vs. %s " % (left, right)
+                )
             if op(left.value, right.value):
                 self.stack[-1] = VTrue()
             else:
@@ -351,8 +376,8 @@ class VM:
             un = self.stack[-1]
             if not isinstance(un, VFalse) and not isinstance(un, VTrue):
                 raise ArithmeticError(
-                    "not only applies to boolean values, got %s" % (
-                        type(un).__name__))
+                    "not only applies to boolean values, got %s" % (type(un).__name__)
+                )
             if isinstance(un, VTrue):
                 self.stack[-1] = VFalse()
             else:
@@ -361,8 +386,7 @@ class VM:
 
         def _bool_check(val: Value) -> None:
             if not isinstance(val, VTrue) and not isinstance(val, VFalse):
-                raise LisbyRuntimeError(
-                    "not a conditional value, got %s" % val)
+                raise LisbyRuntimeError("not a conditional value, got %s" % val)
 
         def jt(pc: int) -> int:
             val = self._pop()
@@ -386,8 +410,7 @@ class VM:
         def declare(pc: int) -> int:
             symindex = self._read_int(pc)
             self.env.values[symindex] = None
-            self._trace("declare symbol `%s'" % self.program.symbol_name(
-                symindex))
+            self._trace("declare symbol `%s'" % self.program.symbol_name(symindex))
             return pc + 8
 
         def printt(pc: int) -> int:
@@ -407,14 +430,13 @@ class VM:
         def _list_check_type(val: Value, name: str) -> None:
             if not isinstance(val, VList):
                 raise LisbyRuntimeError(
-                    "%s expects a list, got %s " % (
-                        name, type(val).__name__))
+                    "%s expects a list, got %s " % (name, type(val).__name__)
+                )
 
         def _list_check(val: Value, name: str) -> None:
             _list_check_type(val, name)
             if len(val.value) == 0:
-                raise LisbyRuntimeError(
-                    "%s got an empty list" % name)
+                raise LisbyRuntimeError("%s got an empty list" % name)
 
         def head(pc: int) -> int:
             _list_check(self.stack[-1], "head")
@@ -509,16 +531,17 @@ class VM:
             departenv,
             quasiquote,
         )
-        assert len(ops) == Op.Type._MAX, \
-            "%d != %d" % (len(ops), int(Op.Type._MAX))
+        assert len(ops) == Op.Type._MAX, "%d != %d" % (len(ops), int(Op.Type._MAX))
 
         try:
             while True:
                 op = self.tapes[self.tape][pc]
                 pc += 1
                 handler = ops[op]
-                self._trace("[tape=%04d, pc=%04d, env=%d]: %s" % (
-                    self.tape, pc, self.env.id, handler.__name__))
+                self._trace(
+                    "[tape=%04d, pc=%04d, env=%d]: %s"
+                    % (self.tape, pc, self.env.id, handler.__name__)
+                )
                 pc = ops[op](pc)
                 if self.trace:
                     self._dump_stack()

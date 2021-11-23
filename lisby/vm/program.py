@@ -11,6 +11,7 @@ class Program:
     @classmethod
     def deserialize(cls, raw: bytes) -> "Program":
         """Deserializes the raw bytecode representation into a Program."""
+
         def next_int():
             nonlocal raw
             ret = unpack("<q", raw[:8])[0]
@@ -54,7 +55,7 @@ class Program:
         print("Symbols: %s" % p.symbols)
         return p
 
-    def __init__(self, debug: bool=False) -> None:
+    def __init__(self, debug: bool = False) -> None:
         self.debug: bool = debug
         self.tapes: List[List[int]] = [[]]  # all code tapes
         self.strings: List[str] = []  # interned static strings
@@ -130,13 +131,12 @@ class Program:
 
     def patch(self, tape: int, pc: int, raw: bytes) -> None:
         assert len(raw) == 8, "We support only 8 byte raw values"
-        self.tapes[self.tape][pc:pc + 8] = raw
+        self.tapes[self.tape][pc : pc + 8] = raw
 
     def emit(self, code: int) -> None:
         assert code >= 0 and code <= 255, "Invalid byte"
         self.tapes[self.tape].append(code)
-        self._debug("[%d] emitted %s" % (
-            self.tape, Op.Type.fromint(code).name))
+        self._debug("[%d] emitted %s" % (self.tape, Op.Type.fromint(code).name))
 
     def emitpholder(self) -> int:
         """Emits a placeholder value."""
