@@ -1,0 +1,13 @@
+(define (-fibo x sum)
+  (if (= x 0)
+      0
+    (if (= x 1)
+        1
+      (+
+       (-fibo (- x 1) (+ sum x))
+       (-fibo (- x 2) (+ sum x))))))
+(define (fibo x) (-fibo x 0))
+
+(define fn 20)
+(define result (fibo fn))
+(display "Fibonacci number for " fn " is " result ".")
