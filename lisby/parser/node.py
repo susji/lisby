@@ -9,7 +9,10 @@ class NodeError(Exception):
 
 
 class Node:
-    def __init__(self, token: plex.LexToken, arity: int, left=None,
+    def __init__(self,
+                 token: plex.LexToken,
+                 arity: int,
+                 left=None,
                  right=None) -> None:
         if arity == 1:
             if left is None:
