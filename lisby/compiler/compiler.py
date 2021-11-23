@@ -1,4 +1,5 @@
 from typing import List, Callable, Dict
+from copy import deepcopy
 from struct import pack
 
 from lisby.shared import LisbySyntaxError
@@ -51,16 +52,17 @@ class Macro:
         return n
 
     def expand(self, n: Application) -> None:
-        self._debug("`%s' of node %s" % (self.name, n))
         args = n.args()
+        self._debug("`%s' of node %s" % (self.name, n))
         if len(args) != len(self.params):
             raise LisbySyntaxError(
-                n,
-                "Macro %s expects %d arguments, got %d" % (
-                    self.name, len(self.params), len(args)))
+                n, "Macro %s expects %d arguments, got %d" %
+                (self.name, len(self.params), len(args)))
+        body_orig = deepcopy(self.body)
         for node in self.body:
             node = self._expand(args, node)
             self.compiler._compile(self.program, node)
+        self.body = body_orig
         self._debug("finished expansion")
 
 
