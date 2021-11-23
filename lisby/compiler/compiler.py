@@ -78,11 +78,10 @@ class Macro:
                 "Macro %s expects %d arguments, got %d"
                 % (self.name, len(self.params), len(args)),
             )
-        body_orig = deepcopy(self.body)
-        for node in self.body:
+        body = deepcopy(self.body)
+        for node in body:
             node = self._expand(args, node)
             self.compiler._compile(self.program, node)
-        self.body = body_orig
         self._debug("finished expansion")
 
 
