@@ -75,7 +75,7 @@ class String(Value):
         super().__init__(value)
 
     def __str__(self):
-        return '%s' % self.value
+        return "%s" % self.value
 
     def copy(self):
         return self
@@ -132,8 +132,9 @@ class Closure(Value):
 
 
 class Continuation(Value):
-    def __init__(self, stack: List[Value], rets: List[Address], tape: int,
-                 pc: int) -> None:
+    def __init__(
+        self, stack: List[Value], rets: List[Address], tape: int, pc: int
+    ) -> None:
         super().__init__(tape)
         self.stack = stack
         self.rets = rets

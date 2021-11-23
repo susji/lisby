@@ -20,24 +20,44 @@ def make_completer(vocabulary):
     return custom_complete
 
 
-aparser = argparse.ArgumentParser(description="lisby interpreter",
-                                  epilog="""
+aparser = argparse.ArgumentParser(
+    description="lisby interpreter",
+    epilog="""
 Running without the source or destination arguments will give you a REPL.
-""")
-aparser.add_argument("-s",
-                     "--source",
-                     nargs="?",
-                     type=argparse.FileType("r"),
-                     help="input source or '-' for stdin")
-aparser.add_argument("-b", "--bytecode", nargs="?",
-                     type=argparse.FileType("rb"),
-                     help="input bytecode or '-' for stdin")
-aparser.add_argument("-v", "--verbose", action="store_true",
-                     help="print verbose output while compiling and running")
-aparser.add_argument("-d", "--dump", type=argparse.FileType("wb"),
-                     help="without executing, dump bytecode to a file")
-aparser.add_argument("-D", "--display", action="store_true",
-                     help="without executing, display decoded bytecode")
+""",
+)
+aparser.add_argument(
+    "-s",
+    "--source",
+    nargs="?",
+    type=argparse.FileType("r"),
+    help="input source or '-' for stdin",
+)
+aparser.add_argument(
+    "-b",
+    "--bytecode",
+    nargs="?",
+    type=argparse.FileType("rb"),
+    help="input bytecode or '-' for stdin",
+)
+aparser.add_argument(
+    "-v",
+    "--verbose",
+    action="store_true",
+    help="print verbose output while compiling and running",
+)
+aparser.add_argument(
+    "-d",
+    "--dump",
+    type=argparse.FileType("wb"),
+    help="without executing, dump bytecode to a file",
+)
+aparser.add_argument(
+    "-D",
+    "--display",
+    action="store_true",
+    help="without executing, display decoded bytecode",
+)
 args = aparser.parse_args()
 
 if args.verbose:
@@ -52,7 +72,7 @@ vm = VM()
 forest: List[Node] = []
 
 
-def run(program: Program, pc: int=0) -> int:
+def run(program: Program, pc: int = 0) -> int:
     if args.display:
         program.dump()
         sys.exit(0)

@@ -27,9 +27,16 @@ class TestVM(unittest.TestCase):
     def test_add(self):
         vm = self.v()
         p = self.p()
-        p.tapes = [([Op.Type.PUSHI] + p64(-2) +
-                  [Op.Type.PUSHI] + p64(5) +
-                  [Op.Type.ADD] + [Op.Type.HALT])]
+        p.tapes = [
+            (
+                [Op.Type.PUSHI]
+                + p64(-2)
+                + [Op.Type.PUSHI]
+                + p64(5)
+                + [Op.Type.ADD]
+                + [Op.Type.HALT]
+            )
+        ]
         vm.run(p, trace=True)
         self.assertEqual(vm.pc, 9 + 9 + 1 + 1)
         self.assertEqual(len(vm.stack), 1)

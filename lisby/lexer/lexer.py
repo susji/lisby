@@ -4,7 +4,7 @@ import ply.lex as plex
 
 
 def find_column(token):
-    line_start = token.lexer.c.rfind('\n', 0, token.lexpos) + 1
+    line_start = token.lexer.c.rfind("\n", 0, token.lexpos) + 1
     return (token.lexpos - line_start) + 1
 
 
@@ -30,7 +30,7 @@ tokens = (
     "PERIOD",
 )
 
-t_ignore = ' \t'
+t_ignore = " \t"
 t_QUOTE = r"'"
 t_SYMBOL = r"[^ .`,'\t\n\(\)#]+"
 t_TRUE = r"\#t"

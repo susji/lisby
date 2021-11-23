@@ -2,12 +2,24 @@ from typing import List
 
 import ply.lex as plex
 
-from .node import (Node, Application, Int, Float, String, Symbol, Unit,
-                   TTrue, TFalse, Quoted, Quasiquoted, Unquoted)
+from .node import (
+    Node,
+    Application,
+    Int,
+    Float,
+    String,
+    Symbol,
+    Unit,
+    TTrue,
+    TFalse,
+    Quoted,
+    Quasiquoted,
+    Unquoted,
+)
 from lisby.shared import LisbySyntaxError
 
-INT_MAX = 2**63
-INT_MIN = -2**63
+INT_MAX = 2 ** 63
+INT_MIN = -(2 ** 63)
 
 
 class End(Exception):
@@ -44,9 +56,7 @@ class Parser:
         if cur.type == ty:
             self._next()
         else:
-            raise LisbySyntaxError(
-                cur,
-                "expecting %s, got %s" % (ty, cur.type))
+            raise LisbySyntaxError(cur, "expecting %s, got %s" % (ty, cur.type))
 
     def _atom(self) -> Node:
         cur = self._cur()
@@ -94,8 +104,10 @@ class Parser:
         except End:
             raise LisbySyntaxError(cur, "Application ended abruptly")
         self._accept("RPAREN")
-        self._debug("apply of %s with args <%s>" % (
-            what, ", ".join(["%s" % arg for arg in args])))
+        self._debug(
+            "apply of %s with args <%s>"
+            % (what, ", ".join(["%s" % arg for arg in args]))
+        )
         return Application(cur, applier=what, args=args)
 
     def _quoted(self):

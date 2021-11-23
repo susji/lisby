@@ -1,8 +1,18 @@
 import unittest
 from lisby.lexer import Lexer
-from lisby.parser import (Parser, Application, Symbol, Int, TTrue, TFalse,
-                          IntegerSize, Quasiquoted, Unquoted,
-                          INT_MIN, INT_MAX)
+from lisby.parser import (
+    Parser,
+    Application,
+    Symbol,
+    Int,
+    TTrue,
+    TFalse,
+    IntegerSize,
+    Quasiquoted,
+    Unquoted,
+    INT_MIN,
+    INT_MAX,
+)
 
 
 class TestParser(unittest.TestCase):
