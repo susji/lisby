@@ -171,14 +171,7 @@ class VM:
             # or both are float.
             if isinstance(left, Int) and isinstance(right, Int):
                 r = op(left.value, right.value)
-                if isinstance(r, int):
-                    result = Int(r)
-                elif isinstance(r, float):
-                    result = Float(r)
-                else:
-                    raise LisbyRuntimeError(
-                        "surpising arithmetic result type: %s " % (type(r).__name__)
-                    )
+                result = Int(int(r))
             elif (
                 isinstance(left, Float)
                 and isinstance(right, Float)
