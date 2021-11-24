@@ -97,6 +97,7 @@ class Compiler:
             "begin": self._begin,
             "set!": self._set,
             "display": self._display,
+            "error": self._error,
             "list": self._list,
             "::": self._concat_list,
             "eval": self._eval,
@@ -314,6 +315,13 @@ class Compiler:
         self._push_string(p, "\n")
         p.emit(Op.Type.PRINT)
         p.emit(Op.Type.PUSHUNIT)
+
+    def _error(self, p: Program, node: Application) -> None:
+        self._debug("error")
+        self._push_string(p, "error: ")
+        p.emit(Op.Type.PRINT)
+        self._display(p, node)
+        p.emit(Op.Type.HALT)
 
     def _begin(self, p: Program, node: Application) -> None:
         self._debug("begin")
