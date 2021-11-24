@@ -1,0 +1,7 @@
+(define (reciprocal v)
+  (call/cc (lambda (return)
+             (if (= v 0) (return 'undefined) #f)
+             (/ 1 v))))
+
+(display "Reciprocal of 2 is " (reciprocal 2))
+(display "Reciprocal of 0 is " (reciprocal 0))
