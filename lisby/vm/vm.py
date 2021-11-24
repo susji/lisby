@@ -183,8 +183,8 @@ class VM:
                 result = Float(op(left.value, right.value))  # type: ignore
             else:
                 raise ArithmeticError(
-                    "cannot add types %s and %s"
-                    % (type(left).__name__, type(right).__name__)
+                    "cannot %s types %s and %s: %s vs. %s"
+                    % (str(op), type(left).__name__, type(right).__name__, left, right)
                 )  # type: ignore
             self.stack[-1] = result
 
