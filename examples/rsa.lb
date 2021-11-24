@@ -88,7 +88,10 @@
 
 (define decrypted-ciphertext (decrypt ciphertext d n))
 
-
 (display "The plaintext is:            " plaintext)
 (display "The ciphertext is:           " ciphertext)
 (display "The decrypted ciphertext is: " decrypted-ciphertext)
+
+(if (= plaintext decrypted-ciphertext)
+    (display "Result OK.")
+  (error "RSA fail!"))
