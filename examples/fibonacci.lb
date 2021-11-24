@@ -10,4 +10,7 @@
 
 (define fn 20)
 (define result (fibo fn))
-(display "Fibonacci number for " fn " is " result ".")
+(if (= 6765 result)
+    (display "Fibonacci number calculated correctly -- F(" fn ") is " result)
+  (error "Wrong answer, this guy thinks F(20) is " result))
+
