@@ -67,6 +67,31 @@ class TestLexer(unittest.TestCase):
         for (i, val) in enumerate(wanted):
             self.assertEqual(toks[i].type, val)
 
+    def test_comment(self):
+        lexer = self.lx()
+        toks = lexer.lex(
+            r"""
+(+ 1 2) ; this should be ignored
+;; this too ()()
+(* 3 4)"""
+        )
+        wanted = [
+            "LPAREN",
+            "SYMBOL",
+            "INT",
+            "INT",
+            "RPAREN",
+            "LPAREN",
+            "SYMBOL",
+            "INT",
+            "INT",
+            "RPAREN",
+            "END",
+        ]
+        print(toks)
+        for (i, val) in enumerate(toks):
+            self.assertEqual(val.type, wanted[i])
+
     def test_period(self):
         lexer = self.lx()
         toks = lexer.lex("...")
