@@ -77,6 +77,11 @@ def t_newline(t):
     t.lexer.lineno += t.value.count("\n")
 
 
+def t_COMMENT(t):
+    r";.*"
+    pass
+
+
 def t_error(t):
     raise ValueError("Unexpected character: %s" % t.value[0])
 

@@ -171,14 +171,7 @@ class VM:
             # or both are float.
             if isinstance(left, Int) and isinstance(right, Int):
                 r = op(left.value, right.value)
-                if isinstance(r, int):
-                    result = Int(r)
-                elif isinstance(r, float):
-                    result = Float(r)
-                else:
-                    raise LisbyRuntimeError(
-                        "surpising arithmetic result type: %s " % (type(r).__name__)
-                    )
+                result = Int(int(r))
             elif (
                 isinstance(left, Float)
                 and isinstance(right, Float)
@@ -190,8 +183,8 @@ class VM:
                 result = Float(op(left.value, right.value))  # type: ignore
             else:
                 raise ArithmeticError(
-                    "cannot add types %s and %s"
-                    % (type(left).__name__, type(right).__name__)
+                    "cannot %s types %s and %s: %s vs. %s"
+                    % (str(op), type(left).__name__, type(right).__name__, left, right)
                 )  # type: ignore
             self.stack[-1] = result
 

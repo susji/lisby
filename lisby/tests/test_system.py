@@ -407,11 +407,11 @@ class TestSystem(unittest.TestCase):
 (define (inv v)
     (call/cc (lambda (return)
         (display "doing things")
-        (if (= v 0) (return 0) #f)
+        (if (= v 0.0) (return 0) #f)
         (display "otherwise doing other things")
         (/ 1 v))))
-(define one (inv 2))
-(define two (inv 0))
+(define one (inv 2.0))
+(define two (inv 0.0))
         """
         )
         p = vm.program
@@ -420,7 +420,7 @@ class TestSystem(unittest.TestCase):
         two = env.values[p.symbol_find("two")]
         self.assertTrue(isinstance(one, Float))
         self.assertTrue(isinstance(two, Int))
-        self.assertEqual(one.value, 0.5)
+        self.assertAlmostEqual(one.value, 0.5)
         self.assertEqual(two.value, 0)
 
     def test_quasiquote(self):
