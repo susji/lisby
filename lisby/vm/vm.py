@@ -1,5 +1,5 @@
 import array
-from typing import List, Dict
+from typing import List, Dict, Union
 from struct import unpack
 import operator
 
@@ -12,6 +12,7 @@ from .value import (
     Float,
     String,
     Symbol,
+    Builtin,
     VTrue,
     VFalse,
     Closure,
@@ -127,7 +128,6 @@ class VM:
             except KeyError:
                 curenv = curenv.parent
         sym = self.program.symbol_name(symindex)
-        self._dump_env()
         raise LisbyRuntimeError("Cannot resolve symbol: %s" % sym)
 
     def rewind_after_error(self) -> int:
@@ -248,8 +248,16 @@ class VM:
 
         def pushsy(pc: int) -> int:
             symindex = self._read_int(pc)
-            env = self._find_sym_env(symindex)
-            self._push((env.values[symindex]).copy())
+            try:
+                env = self._find_sym_env(symindex)
+                self._push((env.values[symindex]).copy())
+            except LisbyRuntimeError as e:
+                symname = self.program.symbol_name(symindex)
+                if symname in builtins:
+                    self._push(Builtin(symname))
+                else:
+                    self._dump_env()
+                    raise e
             return pc + 8
 
         def pushsyraw(pc: int) -> int:
@@ -298,6 +306,34 @@ class VM:
             self._store(self.topenv, pc)
             return pc + 8
 
+        def builtin(pc: int, fun: Union[Builtin, Symbol]):
+            # Keep this in sync with `builtins`.
+            i = {
+                "+": add,
+                "-": sub,
+                "*": mul,
+                "/": div,
+                "%": mod,
+                "=": eq,
+                "!=": neq,
+                "<": lt,
+                "<=": le,
+                ">": gt,
+                ">=": ge,
+                "not": nott,
+                "head": head,
+                "tail": tail,
+                "dump": dump,
+                "^": xor,
+                "&": andd,
+                "|": orr,
+                "~": inv,
+            }
+            if fun.value in i:
+                return i[fun.value](pc)
+            else:
+                raise LisbyRuntimeError("unrecognized builtin: %s" % fun)
+
         def call(pc: int) -> int:
             callee = self._pop()
             if isinstance(callee, Closure):
@@ -312,9 +348,11 @@ class VM:
                 self.rets = callee.rets
                 self.tape = callee.tape
                 return callee.pc
+            elif isinstance(callee, Builtin) or isinstance(callee, Symbol):
+                return builtin(pc, callee)
             else:
                 raise LisbyRuntimeError(
-                    "can only apply a continuation or a closure, got %s"
+                    "can only apply a continuation, closure or a builtin, got %s"
                     % (type(callee).__name__)
                 )
 

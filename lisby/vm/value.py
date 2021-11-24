@@ -70,6 +70,17 @@ class Symbol(Value):
         return self
 
 
+class Builtin(Value):
+    def __init__(self, value: str) -> None:
+        super().__init__(value)
+
+    def __str__(self):
+        return "Builtin(%s)" % self.value
+
+    def copy(self):
+        return self
+
+
 class String(Value):
     def __init__(self, value: str) -> None:
         super().__init__(value)

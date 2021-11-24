@@ -482,3 +482,20 @@ class TestSystem(unittest.TestCase):
         res = env.values[p.symbol_find("counter")]
         self.assertTrue(isinstance(res, Int), res)
         self.assertEqual(res.value, 1024)
+
+    def test_reified_builtins(self):
+        vm = self.invoke(
+            """
+(define (bin-op fun a b) (fun a b))
+
+(+ 5 7)
+(bin-op + 2 3)
+"""
+        )
+        latter = vm.stack.pop()
+        self.assertTrue(isinstance(latter, Int), latter)
+        self.assertEqual(latter.value, 5)
+
+        first = vm.stack.pop()
+        self.assertTrue(isinstance(first, Int), first)
+        self.assertEqual(first.value, 12)

@@ -1,0 +1,12 @@
+(define (mapr with what)
+  (if (= what '())
+      '()
+    (:: (list (with (head what))) (mapr with (tail what)))))
+
+(mapr
+ (lambda (fun)
+   (display "fun is " fun)
+   (mapr
+    (lambda (pair) (fun (head pair) (head (tail pair))))
+    '((2 3) (4 5) (6 7))))
+ (list + * & ^ (lambda (a b) (* a b))))
