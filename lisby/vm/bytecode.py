@@ -66,10 +66,11 @@ class Op:
         _MAX = 48
 
     @classmethod
-    def rawfollows(cls, ty) -> int:
+    def rawfollows(cls, ty: "Op.Type") -> int:
         """Determine how many following bytes to skip if an instruction
         happens to define subsequent raw data."""
         followers = (
+            cls.Type.EVAL,
             cls.Type.PUSHI,
             cls.Type.PUSHF,
             cls.Type.PUSHSTR,
