@@ -499,3 +499,32 @@ class TestSystem(unittest.TestCase):
         first = vm.stack.pop()
         self.assertTrue(isinstance(first, Int), first)
         self.assertEqual(first.value, 12)
+
+    def test_eval_simple(self):
+        vm = self.invoke(
+            """
+(+ 1 (eval '(* 2 3)))
+"""
+        )
+        val = vm.stack.pop()
+        self.assertTrue(isinstance(val, Int), val)
+        self.assertEqual(val.value, 7)
+
+    def test_eval_chained(self):
+        vm = self.invoke(
+            """
+(+ 1 (eval '(eval '(* 2 3))))
+"""
+        )
+        val = vm.stack.pop()
+        self.assertTrue(isinstance(val, Int), val)
+        self.assertEqual(val.value, 7)
+
+    def test_eval_isolated(self):
+        with self.assertRaises(LisbyRuntimeError):
+            vm = self.invoke(
+                """
+(define x 3)
+(+ 1 (eval '(* 2 x)))
+"""
+            )

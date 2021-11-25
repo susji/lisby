@@ -1,0 +1,4 @@
+(display "Hello World!")
+(eval '(display "Hola Mundo!"))
+(display "Result from another World: " (eval '(+ 1 2)))
+(eval '(eval '(display "Hello from another-another World!")))

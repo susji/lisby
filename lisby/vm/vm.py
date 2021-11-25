@@ -105,6 +105,9 @@ class VM:
     def _pop_noret(self) -> None:
         self.stack = self.stack[:-1]
 
+    def _read_bytes(self, pc: int, n: int) -> bytes:
+        return bytes(self.tapes[self.tape][pc : pc + n])
+
     def _read_int(self, pc: int) -> int:
         return unpack("<q", self.tapes[self.tape][pc : pc + 8])[0]
 
@@ -488,10 +491,13 @@ class VM:
             return pc
 
         def evall(pc: int) -> int:
-            val = self._pop()
-            print("XXX IMPLEMENT EVAL")
-            self._push(val)
-            return pc
+            n = self._read_int(pc)
+            epr = self._read_bytes(pc + 8, n)
+            ep = Program.deserialize(epr)
+            evm = VM()
+            evm.run(ep, trace=self.trace)
+            self.stack.append(evm.stack[-1])
+            return pc + 8 + n
 
         def dump(pc: int) -> int:
             self.program.dump()

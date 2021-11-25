@@ -541,12 +541,31 @@ class Compiler:
         self._compile_exprs(p, exprs)
         p.emit(Op.Type.DEPARTENV)
 
+    def _eval_args(self, node: Application) -> Application:
+        if not isinstance(node, Quoted) and not isinstance(node, Quasiquoted):
+            raise LisbySyntaxError(node, "eval parameter should be quoted")
+        return node.left
+
     def _eval(self, p: Program, node: Application) -> None:
-        self._debug("eval")
+        # The logic behind `eval` is simple: We run the supplied
+        # argument through another, isolated compiler, which produces
+        # a separate program. This program we then stick after our
+        # EVAL operation. To maintain symmetry, we expect that the
+        # executor of this program treat it in a isolated manner -- if
+        # some interaction with the parent program is required, we
+        # only support the eval'd subprogram's return value, that is,
+        # the final expression.
+        self._debug(f"eval: {node}")
         args = node.args()
         if len(args) != 1:
             raise LisbySyntaxError(node, "eval expects one parameter")
+        ec = Compiler(debug=self.debug)
+        ep = Program(debug=self.debug)
+        ec.compile(ep, [self._eval_args(args[0])])
+        epr = ep.serialize()
         p.emit(Op.Type.EVAL)
+        self._emit_int(p, len(epr))
+        p.emitraw(epr)
 
     def _quoted_contents(self, p: Program, q: Node, level: int) -> None:
         def emit_quotes():

@@ -9,7 +9,7 @@ MAGIC = b"LISBY001"
 
 class Program:
     @classmethod
-    def deserialize(cls, raw: bytes) -> "Program":
+    def deserialize(cls, raw: bytes, verbose: bool = False) -> "Program":
         """Deserializes the raw bytecode representation into a Program."""
 
         def next_int():
@@ -45,14 +45,16 @@ class Program:
         tapes = []
         for i in range(ntapes):
             tl = next_int()
-            print("Tape #%d length: %d" % (i, tl))
+            if verbose:
+                print("Tape #%d length: %d" % (i, tl))
             tapes.append(next_bytes(tl))
         p.tapes = tapes
         if len(raw) != ml:
             raise RuntimeError("End magic not found")
-        print("Tapes: %d" % ntapes)
-        print("Strings: %s" % p.strings)
-        print("Symbols: %s" % p.symbols)
+        if verbose:
+            print("Tapes: %d" % ntapes)
+            print("Strings: %s" % p.strings)
+            print("Symbols: %s" % p.symbols)
         return p
 
     def __init__(self, debug: bool = False) -> None:
@@ -146,7 +148,7 @@ class Program:
         return start
 
     def emitraw(self, raw: bytes) -> None:
-        assert len(raw) == 8, "only 8 byte emitraw supported"
+        assert len(raw) >= 8, "emitraw at least 8 bytes"
         self.tapes[self.tape] += [int(c) for c in raw]
         self._debug("emitted raw bytes: %r" % raw)
 
@@ -164,11 +166,20 @@ class Program:
         for tape in range(len(self.tapes)):
             print("# tape %d" % tape)
             fmt = "%%%dd" % (len(str(len(self.tapes[tape]))) + 1) + "  %4d  %s"
-            for (i, val) in enumerate(self.tapes[tape]):
+            i = 0
+            while i < len(self.tapes[tape]):
+                val = self.tapes[tape][i]
                 if no_decode == 0:
                     op = Op.Type.fromint(val)
                     no_decode = Op.rawfollows(op)
+                    if op == Op.Type.EVAL:
+                        # XXX Why not nested dumping? It's a program
+                        # we know how to decompile.
+                        no_decode += unpack(
+                            "<q", bytes(self.tapes[tape][i + 1 : i + 1 + 8])
+                        )[0]
                 else:
                     no_decode -= 1
                     op = ""
                 print(fmt % (i, val, op))
+                i += 1
