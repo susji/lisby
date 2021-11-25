@@ -164,11 +164,18 @@ class Program:
         for tape in range(len(self.tapes)):
             print("# tape %d" % tape)
             fmt = "%%%dd" % (len(str(len(self.tapes[tape]))) + 1) + "  %4d  %s"
-            for (i, val) in enumerate(self.tapes[tape]):
+            i = 0
+            while i < len(self.tapes[tape]):
+                val = self.tapes[tape][i]
                 if no_decode == 0:
                     op = Op.Type.fromint(val)
                     no_decode = Op.rawfollows(op)
+                    if op == Op.Type.EVAL:
+                        no_decode += unpack(
+                            "<q", bytes(self.tapes[tape][i + 1 : i + 1 + 8])
+                        )[0]
                 else:
                     no_decode -= 1
                     op = ""
                 print(fmt % (i, val, op))
+                i += 1
