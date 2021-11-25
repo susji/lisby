@@ -9,7 +9,7 @@ MAGIC = b"LISBY001"
 
 class Program:
     @classmethod
-    def deserialize(cls, raw: bytes) -> "Program":
+    def deserialize(cls, raw: bytes, verbose: bool = False) -> "Program":
         """Deserializes the raw bytecode representation into a Program."""
 
         def next_int():
@@ -45,14 +45,16 @@ class Program:
         tapes = []
         for i in range(ntapes):
             tl = next_int()
-            print("Tape #%d length: %d" % (i, tl))
+            if verbose:
+                print("Tape #%d length: %d" % (i, tl))
             tapes.append(next_bytes(tl))
         p.tapes = tapes
         if len(raw) != ml:
             raise RuntimeError("End magic not found")
-        print("Tapes: %d" % ntapes)
-        print("Strings: %s" % p.strings)
-        print("Symbols: %s" % p.symbols)
+        if verbose:
+            print("Tapes: %d" % ntapes)
+            print("Strings: %s" % p.strings)
+            print("Symbols: %s" % p.symbols)
         return p
 
     def __init__(self, debug: bool = False) -> None:

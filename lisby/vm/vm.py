@@ -496,6 +496,7 @@ class VM:
             ep = Program.deserialize(epr)
             evm = VM()
             evm.run(ep, trace=self.trace)
+            self.stack.append(evm.stack[-1])
             return pc + 8 + n
 
         def dump(pc: int) -> int:
