@@ -542,11 +542,25 @@ class Compiler:
         p.emit(Op.Type.DEPARTENV)
 
     def _eval(self, p: Program, node: Application) -> None:
+        # The logic behind `eval` is simple: We run the supplied
+        # argument through another, isolated compiler, which produces
+        # a separate program. This program we then stick after our
+        # EVAL operation. To maintain symmetry, we expect that the
+        # executor of this program treat it in a isolated manner -- if
+        # some interaction with the parent program is required, we
+        # only support the eval'd subprogram's return value, that is,
+        # the final expression.
         self._debug("eval")
         args = node.args()
         if len(args) != 1:
             raise LisbySyntaxError(node, "eval expects one parameter")
+        ec = Compiler(debug=self.debug)
+        ep = Program(debug=self.debug)
+        ec.compile(ep, args)
+        epr = ep.serialize()
         p.emit(Op.Type.EVAL)
+        self._emit_int(p, len(epr))
+        p.emitraw(epr)
 
     def _quoted_contents(self, p: Program, q: Node, level: int) -> None:
         def emit_quotes():
