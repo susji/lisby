@@ -173,6 +173,8 @@ class Program:
                     op = Op.Type.fromint(val)
                     no_decode = Op.rawfollows(op)
                     if op == Op.Type.EVAL:
+                        # XXX Why not nested dumping? It's a program
+                        # we know how to decompile.
                         no_decode += unpack(
                             "<q", bytes(self.tapes[tape][i + 1 : i + 1 + 8])
                         )[0]
