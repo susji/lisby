@@ -146,7 +146,7 @@ class Program:
         return start
 
     def emitraw(self, raw: bytes) -> None:
-        assert len(raw) == 8, "only 8 byte emitraw supported"
+        assert len(raw) >= 8, "emitraw at least 8 bytes"
         self.tapes[self.tape] += [int(c) for c in raw]
         self._debug("emitted raw bytes: %r" % raw)
 
